@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <AnchorPane fx:controller="io.CloudController" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
             minWidth="-Infinity" prefHeight="592.0"
-            prefWidth="605.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1">
+            prefWidth="605.0" xmlns="http://javafx.com/javafx/08.0.1" xmlns:fx="http://javafx.com/fxml/1">
     <TextField fx:id="input" onAction="#sendCommand" layoutX="14.0" layoutY="14.0" prefHeight="27.0" prefWidth="572.0"/>
     <TextArea fx:id="output" editable="false" layoutX="14.0" layoutY="56.0" prefHeight="522.0" prefWidth="572.0"/>
 </AnchorPane>

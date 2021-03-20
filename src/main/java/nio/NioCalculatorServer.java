@@ -63,7 +63,7 @@ public class NioCalculatorServer {
             buffer.clear();
         System.out.println("received: " + msg);
 
-        buffer.put((char) msg);
+       // buffer.put((char) msg);
         buffer.rewind();
             channel.write(buffer);
 

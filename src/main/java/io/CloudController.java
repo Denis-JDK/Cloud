@@ -13,13 +13,13 @@ import javafx.scene.control.TextField;
 
 public class CloudController implements Initializable {
 
-    /**
+    /* *
      * ls
      * touch file.txt
      * cat file.txt
      * cd path
      *
-     * */
+     *  */
 
     private static final int BUFFER_SIZE = 1024;
     private static final String clientDir = "client/";
@@ -32,7 +32,7 @@ public class CloudController implements Initializable {
 
     public void sendCommand(ActionEvent actionEvent) throws IOException {
         String text = input.getText();
-        server.broadcastMsg(text);
+       // server.broadcastMsg(text);
         input.clear();
         network.write(text); //отправили на сервер текст из окошка
     }
