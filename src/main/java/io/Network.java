@@ -12,6 +12,7 @@ public class Network implements Closeable {
     private final DataOutputStream os;
     private final Socket socket;
     private static Network instance;
+    private IoFileCommandServer server;
 
 
 

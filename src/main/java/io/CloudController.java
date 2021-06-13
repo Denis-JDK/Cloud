@@ -1,5 +1,9 @@
 package io;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URL;
+import java.util.ResourceBundle;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -7,58 +11,67 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.URL;
-import java.util.ResourceBundle;
-
 public class CloudController implements Initializable {
+
+    /**
+     * ls
+     * touch file.txt
+     * cat file.txt
+     * cd path
+     *
+     * */
 
     private static final int BUFFER_SIZE = 1024;
     private static final String clientDir = "client/";
+
     public TextField input;
     public TextArea output;
     private Network network;
-    private byte [] buffer;
+    private byte[] buffer;
+    private IoFileCommandServer server;
 
     public void sendCommand(ActionEvent actionEvent) throws IOException {
         String text = input.getText();
+        server.broadcastMsg(text);
         input.clear();
-        network.write(text);
+        network.write(text); //отправили на сервер текст из окошка
     }
 
-    // getFile getName -> file fileName fileSize fileBytes
-    // послали в сеть        ответ сети
+    // getFile fileName -> file fileName fileSize fileBytes
 
+    @Override
     public void initialize(URL location, ResourceBundle resources) {
         try {
-            buffer = new byte[BUFFER_SIZE];       //получили буфер
-            network = Network.get();       //получили сеточку
+            buffer = new byte[BUFFER_SIZE];
+            network = Network.get();
             new Thread(() -> {
                 try {
                     while (true) {
-                        String message = network.read(); // масседж получаем от сети
-                        if (message.equals("file")){
+                        String message = network.read();
+                        if (message.equals("file")) {
                             String fileName = clientDir + network.read();
-                            Long fileSize = network.readLong();
-                            // BUFFER_SIZE = 10  (10 + 4 - 1) / 10
-                            // fileSize = 4     (4 - 1) / 10 + 1
-                            // важно чтоб не было нуля иначе не выполнится условие
-                            // i < .. и поток не зайдет в цикл
-                            try(FileOutputStream fos = new FileOutputStream(fileName)) {  //отправили. файл создастся в этой директории с именем которое у него было на сервере
+                            //
+                            long fileSize = network.readLong();
+                            // buffer_size = 10   (10 + 4 - 1) / 10 = 1
+                            // bytes = 4, 11 - 1 / 10 + 1
+                            try (FileOutputStream fos = new FileOutputStream(fileName)) {
                                 for (int i = 0; i < (fileSize - 1) / BUFFER_SIZE + 1; i++) {
                                     int read = network.read(buffer);
                                     fos.write(buffer, 0, read);
                                 }
                             }
+                            String out = message + " " + fileName + " " + fileSize + " bytes " +
+                                    "uploaded from server.\n";
+                            Platform.runLater(() -> output.appendText(out));
+                        } else {
+                            Platform.runLater(() -> output.appendText(message));
                         }
-                        Platform.runLater(() -> output.appendText(message));
-                                if (message.equals("/quit")) {
-                                    network.close();
-                                    break;
-                                }
+                        if (message.equals("/quit")) {
+                            network.close();
+                            break;
                         }
-                }catch (Exception e) {
+                    }
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }).start();
@@ -67,4 +80,3 @@ public class CloudController implements Initializable {
         }
     }
 }
-

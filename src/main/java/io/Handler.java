@@ -10,26 +10,43 @@ public class Handler implements Runnable {
     private final IoFileCommandServer server;
     private final Socket socket;
     private String serverDir = "./";
-    private String userName;
+    private String nickname;
     private final byte [] buffer;
 
-    public Handler(IoFileCommandServer server, Socket socket) {
+    public Handler(IoFileCommandServer server, Socket socket, String nickname) {
         this.server = server;
         this.socket = socket;
-        userName = "user";
         buffer = new byte[BUFFER_SIZE];
+        this.nickname = nickname;
     }
 
     @Override
     public void run() {
         try (DataOutputStream os = new DataOutputStream(socket.getOutputStream());
              DataInputStream is = new DataInputStream(socket.getInputStream())) {
+          /*  while (true) {
+                String message = is.readUTF();
+                // /auth login1 password1
+                String [] tokens = message.split(" ");
+                if (tokens.length >= 3 && tokens[0].equals("/auth")) {
+                    String nickFromDB = SQLHandler.getNickByLoginAndPassword(tokens[1], tokens[2]);
+                    if (nickFromDB != null) {
+                        os.writeUTF("/authOk");
+                        IoFileCommandServer io = new IoFileCommandServer();
+                        io.subscribe(this);
+                        nickname = nickFromDB;
+                        break;
+                    }
+                }
+            }*/
+
             while (true) {
                 String message = is.readUTF();
                 System.out.println("received message: " + message);
+                server.broadcastMsg(nickname + " " + message);
                 if (message.equals("ls")) {
                     File dir = new File(serverDir);
-                    StringBuilder sb = new StringBuilder(userName).append(" files -> \n");
+                    StringBuilder sb = new StringBuilder(nickname).append(" files -> \n");
                     File[] files = dir.listFiles();
                     if (files != null) {
                         for (File file : files) {
@@ -57,7 +74,7 @@ public class Handler implements Runnable {
                     } else if (path.equals("..")) {
                         serverDir = new File(serverDir).getParent();
                     } else {
-                        os.writeUTF("user: wrong path\n");
+                        os.writeUTF(nickname + " : wrong path\n");
                         os.flush();
                     }
                 } else if (message.equals("/quit")) {
@@ -69,7 +86,7 @@ public class Handler implements Runnable {
                     String fileName = data[1];
                     File file = new File(serverDir + fileName);
                     if (!file.exists()) {
-                        os.writeUTF("user: File not exists\n");
+                        os.writeUTF( nickname + " : File not exists\n");
                     } else {
                         os.writeUTF("file");
                         os.writeUTF(fileName);
@@ -84,7 +101,7 @@ public class Handler implements Runnable {
                     }
 
                 } else {
-                    os.writeUTF("user: UNKNOWN COMMAND\n");
+                    os.writeUTF(nickname + " : UNKNOWN COMMAND\n");
                     os.flush();
                 }
             }
@@ -98,4 +115,9 @@ public class Handler implements Runnable {
             }
         }
     }
+
+    public String getNick() {
+        return nickname;
+    }
+
 }
