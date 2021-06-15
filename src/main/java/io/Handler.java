@@ -24,7 +24,7 @@ public class Handler implements Runnable {
     public void run() {
         try (DataOutputStream os = new DataOutputStream(socket.getOutputStream());
              DataInputStream is = new DataInputStream(socket.getInputStream())) {
-          /*  while (true) {
+           while (true) {
                 String message = is.readUTF();
                 // /auth login1 password1
                 String [] tokens = message.split(" ");
@@ -38,7 +38,7 @@ public class Handler implements Runnable {
                         break;
                     }
                 }
-            }*/
+            }
 
             while (true) {
                 String message = is.readUTF();
